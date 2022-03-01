@@ -27,9 +27,9 @@ class Router
      * @param Closure $closure
      * @param array $params
      */
-    public function addGetRoute($path, Closure $closure, bool $api = false)
+    public function addGetRoute($path, Closure $closure)
     {
-        self::registerRoute('GET', $path, $closure, $api);
+        self::registerRoute('GET', $path, $closure);
     }
 
     /**
@@ -38,9 +38,9 @@ class Router
      * @param Closure $closure
      * @param array $params
      */
-    public function addPostRoute($path, Closure $closure, bool $api = false)
+    public function addPostRoute($path, Closure $closure)
     {
-        self::registerRoute('POST', $path, $closure, $api);
+        self::registerRoute('POST', $path, $closure);
     }
 
     /**
@@ -49,7 +49,7 @@ class Router
      * @param $path
      * @param Closure $closure
      */
-    private function registerRoute($type, $path, Closure $closure, bool $api)
+    private function registerRoute($type, $path, Closure $closure)
     {
         $path = '/^' . str_replace('/', '\/', $path) . '\/?$/';
         $patternParams = '/{(.+?)}/';
@@ -63,7 +63,6 @@ class Router
             'method' => $type,
             'closure' => $closure,
             'params' => $requiredParams,
-            'api' => $api
         );
 
     }
@@ -85,10 +84,7 @@ class Router
                 $keys = array_values($route['params']);
                 unset($matches[0]);
 
-                if($route['api'] === false){
-                    $route['params'] = array_filter(array_combine($keys, $matches));
-                }
-
+                $route['params'] = array_filter(array_combine($keys, $matches));
                 $route['type'] = 'route';
                 return $route;
             }
@@ -98,6 +94,8 @@ class Router
 
     public function run()
     {
+        $patternApi= '/^api\//';
+
         try{
             $route = $this->getRoute();
             if(!empty($route)){
@@ -114,8 +112,6 @@ class Router
                     throw new Exception('Parâmetros informados incorretamente', 422);
                 }
 
-
-
                 /**
                  * Sempre passar a request
                  */
@@ -123,12 +119,34 @@ class Router
                 return call_user_func_array($route['closure'], $arrParams);
             }
         }catch(Exception $ex){
+            /**
+             * Caso a rota inicie com api/ sempre será tratada como um requisição de api e o retorno será em formato json
+             */
+            if(preg_match($patternApi, $this->request->getRequestedUri())){
+                return $this->jsonResponse($ex->getCode(), $ex->getMessage());
+            }
             return BaseController::error($ex->getCode(), $ex->getMessage());
         }
-
-
-
+        /**
+         * Caso a rota inicie com api/ sempre será tratada como um requisição de api e o retorno será em formato json
+         */
+        if(preg_match($patternApi, $this->request->getRequestedUri())){
+            return $this->jsonResponse(404, 'endpoint não encontrado');
+        }
         return BaseController::error(404);
+    }
+
+    /**
+     * Resposta em formato json caso a rota solicitada seja uma api
+     * @param int $codigo
+     * @param string $message
+     */
+    private function jsonResponse($codigo = 404, $message = ""){
+        $response = new Response();
+        $response->setContentType('application/json');
+        $response->setCode($codigo);
+        $response->setMessage($message);
+        return $response->sendResponse();
     }
 
 }

@@ -15,7 +15,7 @@ class Response{
      * Conteúdo da resposta
      * @param mixed $content
      */
-    private $content;
+    private $content = [];
 
     /**
      * Cabeçalhos de resposta
@@ -26,6 +26,8 @@ class Response{
      * @param string Tipo do conteúdo da resposta
      */
     private string $contentType = 'text/html';
+
+    private string $message = "resposta do servidor";
 
     public function __construct()
     {
@@ -57,8 +59,9 @@ class Response{
      * Conteúdo da resposta
      * @param mixed $content
      */
-    public function setContent($content): Response
+    public function setContent($content = []): Response
     {
+        if(empty($content)) $content = [];
         $this->content = $content;
         return $this;
     }
@@ -97,6 +100,13 @@ class Response{
     }
 
     /**
+     * @param $message
+     */
+    public function setMessage($message){
+        $this->message = $message;
+    }
+
+    /**
      * Envia a resposta
      */
     public function sendResponse(){
@@ -107,7 +117,12 @@ class Response{
                 exit;
             case 'application/json':
                 $this->content = (array)$this->content;
-                echo json_encode($this->content, JSON_UNESCAPED_UNICODE);
+                $arrResponse = array(
+                    'code' => $this->getCode(),
+                    'message' => $this->message,
+                    'data' => $this->content
+                );
+                echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
                 exit;
         }
     }
