@@ -2,6 +2,7 @@
 
 namespace App\system\dao;
 
+use App\system\Utils\Utils;
 use \PDO;
 use PDOStatement;
 
@@ -13,7 +14,6 @@ abstract class Connection
     private string $user;
     private string $password;
     protected string $table;
-
     protected PDO $pdo;
     protected PdoStatement $statement;
 
@@ -51,7 +51,7 @@ abstract class Connection
      * @return bool
      */
     protected function update($entity, $where){
-        $arrEntity = $this->convertEntityToArray($entity);
+        $arrEntity = Utils::convertEntityToArray($entity,true);
 
         $bindValues = [];
         /**
@@ -88,7 +88,7 @@ abstract class Connection
      * @throws \Exception
      */
     protected function insert($entity){
-        $arrEntity = $this->convertEntityToArray($entity);
+        $arrEntity = Utils::convertEntityToArray($entity);
         $arrValues = array_map(function($v){
             return ":{$v}";
         },array_keys($arrEntity));
@@ -114,44 +114,6 @@ abstract class Connection
     }
 
 
-    /**
-     * Método responsável por converter uma entidade em array associativo
-     * @param $entity
-     * @return array
-     * @throws \Exception
-     */
-    private function convertEntityToArray($entity) : array{
-        if(gettype($entity) !== 'object'){
-            throw new \Exception("Houve um erro na tentativa de atualização dos dados, por favor tente novamente mais tarde", 500);
-        }
-        /**
-         * cast
-         */
-        $arrEntity = (array)$entity;
-        /**
-         * Filtro (somente são permitidos indices com dados)
-         */
-        $arrEntity = array_filter($arrEntity);
-        $arrParams = array();
-        foreach ($arrEntity as $key => $value){
-            /**
-             * Replace no nome da chave ex: 'App\Entity\UserEntityid' => 'id'
-             */
-            $newKey = str_replace(get_class($entity), '', $key);
-            $newKey = trim($newKey);
-
-            /**
-             * Remove id ou created_at (colunas que não podem ser alteradas)
-             */
-
-            if(in_array($newKey, ['id', 'created_at'])){
-                continue;
-            }
-            $arrParams[$newKey] = $value;
-        }
-
-        return $arrParams;
-    }
 
     /**
      * Cria sintaxe where

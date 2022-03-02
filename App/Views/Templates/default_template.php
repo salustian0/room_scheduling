@@ -21,44 +21,23 @@
             <i class="fa-brands fa-php"></i>
             <span>My software</span>
         </div>
-        <?php if($logged):?>
-        <div class="user-options">
-            <div class="button">
-            <span><?php echo $_USER['username']; ?></span>
-            </div>
-            <ul>
-               <li><a href="<?php $this->siteUrl('/logout')?>">Sair</a></li>
-            </ul>
-        </div>
-        <?php endif;?>
     </header>
 
     <div class="center-container">
-        <?php if($logged) :?>
         <aside class="side-menu">
             <ul>
-
-                <?php if($_USER['access'] == "ADM"):?>
-                <li><a href="<?php $this->siteUrl('/usuarios') ?>"><i class="fas fa-table"></i>Listagem Usuarios</a></li>
-                <li><a href="<?php $this->siteUrl('/usuarios/form') ?>"><i class="fas fa-plus"></i>Registro de usuários</a></li>
-                <?php endif;?>
-
-                <li><a href="<?php $this->siteUrl('/funcionarios') ?>"><i class="fas fa-users"></i>Listagem de Funcionários</a></li>
-                <li><a href="<?php $this->siteUrl('/funcionarios/form') ?>"><i class="fas fa-plus"></i>Registro de funcionários</a></li>
-                <li><a href="<?php $this->siteUrl('/ponto') ?>"><i class="fas fa-clock"></i>Listagem de pontos de funcionários</a></li>
-                <li><a href="<?php $this->siteUrl('/ponto/form') ?>"><i class="fas fa-clock"></i>Registro de ponto de funcionario</a></li>
-
+                <li><a href="<?php $this->siteUrl('/home') ?>"><i class="fas fa-home"></i>Home</a></li>
+                <li><a href="<?php $this->siteUrl('/salas') ?>"><i class="fas fa-home"></i>Gerenciamento de salas</a></li>
+                <li><a href="<?php $this->siteUrl('/agendamento') ?>"><i class="fas fa-home"></i>Gerenciamento de agendamentos</a></li
             </ul>
         </aside>
-        <?php endif;?>
 
-
-        <main class="page-content <?php echo ($logged ?  'logged' : ''); ?>">
-            <?php if(!empty($this->messages)) :?>
+        <main class="page-content">
             <div class="messages">
+            <?php if(!empty($this->messages)) :?>
                 <?php $this->renderMessages() ?>
-            </div>
             <?php endif;?>
+            </div>
             <?php $this->renderPage(); ?>
         </main>
     </div>

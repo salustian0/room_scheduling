@@ -3,6 +3,7 @@
 namespace App\system\http;
 use App\Controllers\BaseController;
 use \Closure;
+use MongoDB\Driver\Exception\ServerException;
 use ReflectionFunction;
 use \Exception;
 
@@ -30,6 +31,16 @@ class Router
     public function addGetRoute($path, Closure $closure)
     {
         self::registerRoute('GET', $path, $closure);
+    }
+
+    public function addDeleteRoute($path, Closure $closure)
+    {
+        self::registerRoute('DELETE', $path, $closure);
+    }
+
+    public function addPutRoute($path, Closure $closure)
+    {
+        self::registerRoute('PUT', $path, $closure);
     }
 
     /**
@@ -101,21 +112,30 @@ class Router
             if(!empty($route)){
                 $reflection = new ReflectionFunction($route['closure']);
                 $arrParams = [];
-
-
                 foreach ($reflection->getParameters() as $parameter){
                     $paramName = $parameter->getName();
+                    $paramType = $parameter->getType();
+
+                    /**
+                     * Valida tipo int
+                     */
+                    if($paramType->getName() == 'int' && !is_numeric($route['params'][$paramName])){
+                        throw new Exception("Parâmetros informados incorretamente", 500);
+                    }
+
                     $arrParams[$paramName] = $route['params'][$paramName] ?? '';
                 }
+
 
                 if(count($arrParams) !== $reflection->getNumberOfRequiredParameters()){
                     throw new Exception('Parâmetros informados incorretamente', 422);
                 }
 
                 /**
-                 * Sempre passar a request
+                 * Sempre passar a classe request mesmo que não seja chamada
                  */
                 $arrParams['request'] = $this->request;
+
                 return call_user_func_array($route['closure'], $arrParams);
             }
         }catch(Exception $ex){

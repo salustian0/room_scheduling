@@ -29,6 +29,8 @@ class Response{
 
     private string $message = "resposta do servidor";
 
+    private $errors = [];
+
     public function __construct()
     {
         $this->headers = array();
@@ -106,6 +108,10 @@ class Response{
         $this->message = $message;
     }
 
+    public function setErrors(array $errors){
+        $this->errors = $errors;
+    }
+
     /**
      * Envia a resposta
      */
@@ -116,12 +122,18 @@ class Response{
                 echo $this->content;
                 exit;
             case 'application/json':
+
                 $this->content = (array)$this->content;
                 $arrResponse = array(
                     'code' => $this->getCode(),
                     'message' => $this->message,
                     'data' => $this->content
                 );
+
+                if(!empty($this->errors)){
+                    $arrResponse['errors'] = $this->errors;
+                }
+
                 echo json_encode($arrResponse, JSON_UNESCAPED_UNICODE);
                 exit;
         }

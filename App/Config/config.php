@@ -5,7 +5,7 @@
 defined("DEFAULT_CONTROLLER") || define("DEFAULT_CONTROLLER", "Home");
 defined("DEFAULT_ACTION") || define("DEFAULT_ACTION", "Index");
 defined("ROOT") || define("ROOT", $_SERVER['DOCUMENT_ROOT']);
-defined("SITE_ROOT") || define("SITE_ROOT", ROOT.'/mymvc');
+defined("SITE_ROOT") || define("SITE_ROOT", ROOT.'/rooms');
 
 
 defined("MAINTENANCE") || define("MAINTENANCE", false);
@@ -30,5 +30,5 @@ defined("DB_SETTINGS") || define("DB_SETTINGS", array(
 /**
  * Site configs
  */
-defined("SITE_URL") || define("SITE_URL", "http://localhost/mymvc");
+defined("SITE_URL") || define("SITE_URL", "http://localhost/rooms");
 defined("MEDIA_URL") || define("MEDIA_URL", SITE_URL."/media");
