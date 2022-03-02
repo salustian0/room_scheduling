@@ -14,6 +14,11 @@ use App\system\Utils\Utils;
  */
 class RoomScheduling{
 
+    /**
+     * Endpoint de agendamento de sala
+     * @param Request $request
+     * @throws \Exception
+     */
     static function create(Request $request){
         $response = new Response();
 
@@ -35,19 +40,23 @@ class RoomScheduling{
             return $response->sendResponse();
         }
 
+        /**
+         * Registrando
+         */
         $schedulingModel = new RoomSchedulingModel();
         $insertedId = $schedulingModel->create($schedulingEntity);
-
         if($insertedId){
             $data = $schedulingModel->getById($insertedId);
             if(!empty($data)){
+                /**
+                 * Converte entidade em array
+                 */
                 $data = Utils::convertEntityToArray($data);
             }
 
             /**
-             * Resposta
+             * Resposta de sucesso
              */
-            $response = new Response();
             $response->setContentType('application/json');
             $response->setMessage("Agendamento realizado com sucesso");
             $response->setContent($data);
@@ -57,33 +66,18 @@ class RoomScheduling{
 
     }
 
+    /**
+     * Endpoint de busca de dados (Não possui filtros)
+     * @param Request $request
+     * @throws \Exception
+     */
     static function show(Request $request){
         $response = new Response();
 
         $model = new RoomSchedulingModel();
 
-        $filters = $request->getGetParams('filters');
-        if(!empty($filters)){
-            if(!is_array($filters)){
-                $response->setCode(500);
-                $response->setContentType('application/json');
-                $response->setMessage('Houve um erro durante a busca de dados');
-                $response->setErrors(array('para a busca filtrada é necessário informar os filtros em formato array'));
-                return $response->sendResponse();
-            }
-
-            $errors = self::validateFilters($filters);
-            if(!empty($errors)){
-                $response->setCode(500);
-                $response->setContentType('application/json');
-                $response->setMessage('Houve um erro durante a busca de dados');
-                $response->setErrors($errors);
-                return $response->sendResponse();
-            }
-        }
-
         if(empty($idSala)){
-            $data = $model->getAll($filters);
+            $data = $model->getAll();
         }else{
             $data = $model->getById($idSala);
         }
@@ -182,6 +176,10 @@ class RoomScheduling{
         return $errors;
     }
 
+    /**
+     * Endpoint de exclusão de agendamento
+     * @param int $id
+     */
     static function delete(int $id){
         $response = new Response();
         $response->setContentType('application/json');
