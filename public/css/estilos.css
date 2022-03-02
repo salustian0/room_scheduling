@@ -445,6 +445,7 @@ body.overflow-hidden{
 .side-menu ul {
     display: flex;
     flex-direction: column;
+    padding: 4px;
 }
 .side-menu > ul li{
     display: flex;
@@ -453,7 +454,6 @@ body.overflow-hidden{
 }
 .side-menu > ul a{
     width: 100%;
-    text-align: center;
     color: var(--primary-color);
     font-weight: 600;
     transition: all .5s;

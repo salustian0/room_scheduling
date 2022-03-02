@@ -19,7 +19,7 @@
     <header class="main-header">
         <div class="logo">
             <i class="fa-brands fa-php"></i>
-            <span>My software</span>
+            <span>Gerenciamento de salas</span>
         </div>
     </header>
 
@@ -27,9 +27,9 @@
         <aside class="side-menu">
             <ul>
                 <li><a href="<?php $this->siteUrl('/home') ?>"><i class="fas fa-home"></i>Home</a></li>
-                <li><a href="<?php $this->siteUrl('/salas') ?>"><i class="fas fa-home"></i>Gerenciamento de salas</a></li>
-                <li><a href="<?php $this->siteUrl('/agendamento') ?>"><i class="fas fa-home"></i>Gerenciamento de agendamentos</a></li>
-                <li><a href="<?php $this->siteUrl('/docs') ?>"><i class="fas fa-home"></i>Api doc</a></li>
+                <li><a href="<?php $this->siteUrl('/salas') ?>"><i class="fas fa-person-booth"></i>Gerenciamento de salas</a></li>
+                <li><a href="<?php $this->siteUrl('/agendamento') ?>"><i class="fa-solid fa-calendar-plus"></i>Gerenciamento de agendamentos</a></li>
+                <li><a href="<?php $this->siteUrl('/docs') ?>"><i class="fas fa-book"></i>Api doc</a></li>
             </ul>
         </aside>
 
