@@ -279,4 +279,29 @@ class View
         $script .= PHP_EOL."</script>";
         echo $script;
     }
+
+    /**
+     * @param $path
+     * @param bool $echo
+     * @return string|void
+     */
+    public function cssUrl($path,$echo = true){
+        return $this->publicUrl('/css'.$path,$echo);
+
+    }
+
+    /**
+     * @param $path
+     * @param bool $echo
+     * @return string|void
+     */
+    public function jsUrl($path, $echo = true){
+        return $this->publicUrl('/js'.$path,$echo);
+    }
+
+    public function publicUrl($path, $echo = true){
+        $string = SITE_URL.'/public'.$path;
+        if(!$echo) return $string;
+        echo $string;
+    }
 }
