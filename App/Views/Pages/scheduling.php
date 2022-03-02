@@ -3,7 +3,7 @@
     <h3 class="title">Agendamento de sala</h3>
     <div class="content">
         <?php if (!empty($rooms)): ?>
-        <form class="form-ajax" style="display: flex; flex-direction: column" method="POST" action="<?php $this->siteUrl('/api/salas/agendar')?>">
+        <form class="form-ajax" style="display: flex; flex-direction: column" method="POST" action="<?php $this->siteUrl('/api/agendamento/registrar')?>">
             <input type="date" name="date" placeholder="Data" class="sys-input" value="<?=date('Y-m-d')?>">
             <input type="time" name="start_time" placeholder="Hora inicial" class="sys-input" value="00:00">
             <input type="time" name="end_time" placeholder="Hora final" class="sys-input" value="00:00">

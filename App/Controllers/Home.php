@@ -38,4 +38,15 @@ class Home{
         $view->setJsVar('const', 'listMethod', 'listScheduling');
         return $view->render('scheduling', $vars);
     }
+
+    static function SwaggerJson(){
+        $openapi = \OpenApi\Generator::scan([SITE_ROOT."/App/Controllers/Api"]);
+        header('Content-Type: application/json');
+        echo $openapi->toJson();
+    }
+
+    static function docs(){
+        $view = new View();
+        return $view->render('docs');
+    }
 }

@@ -10,11 +10,19 @@ use App\system\Utils\Security;
 use App\system\Utils\Utils;
 
 /**
- * Classe responsável pelos agendamentos de salas
+ * @OA\Tag(
+ *     name="agendamentos",
+ *     description="Gerenciamento das salas"
+ * )
  */
 class RoomScheduling{
 
     /**
+     *  * @OA\Post(
+     *     path="/api/agendamento/registrar",tags={"agendamentos"},
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
      * Endpoint de agendamento de sala
      * @param Request $request
      * @throws \Exception
@@ -67,6 +75,11 @@ class RoomScheduling{
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/agendamento/show",tags={"agendamentos"},
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
      * Endpoint de busca de dados (Não possui filtros)
      * @param Request $request
      * @throws \Exception
@@ -177,6 +190,21 @@ class RoomScheduling{
     }
 
     /**
+     * @OA\Delete(
+     *     path="/api/agendamento/delete/{idAgendamento}",tags={"agendamentos"},
+     *     @OA\Parameter(
+     *         description="Id do registro do agendamento a ser deletado",
+     *         in="path",
+     *         name="idAgendamento",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64",
+     *         )
+     *     ),
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
      * Endpoint de exclusão de agendamento
      * @param int $id
      */

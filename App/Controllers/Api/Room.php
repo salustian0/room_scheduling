@@ -10,19 +10,36 @@ use App\system\http\Response;
 use App\system\Utils\Utils;
 
 /**
- * Classe responsável pelas salas
+ * @OA\Server(
+ *     url="http://localhost/rooms",
+ *     description="API server"
+ * )
+ * @OA\Info(
+ *     title="Api Salas / Agendamentos",
+ *     description="Api de gerenciamento de salas",
+ *     version="1.0"
+ * )
+ * @OA\Tag(
+ *     name="salas",
+ *     description="Gerenciamento das salas"
+ * )
  */
 class Room
 {
 
     /**
-     * Endpoint de criação de sala
+     * @OA\Post(
+     *     path="/api/salas/registrar",tags={"salas"},
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
      * @param Request $request
      * @throws \Exception
      */
     static function create(Request $request)
     {
         $response = new Response();
+        $response->setContentType('application/json');
 
         $roomEntity = new RoomEntity();
         $roomEntity->setName($request->getPostParams('name'));
@@ -71,6 +88,7 @@ class Room
 
 
     /**
+     *
      * Validação de criação
      * @param RoomEntity $roomEntity
      * @return array
@@ -96,6 +114,26 @@ class Room
     }
 
     /**
+     * @OA\Get(
+     *     path="/api/salas/show",tags={"salas"},
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
+     * @OA\Get(
+     *     path="/api/salas/show/{idSala}",tags={"salas"},
+     *     @OA\Parameter(
+     *         description="ID of pet to fetch",
+     *         in="path",
+     *         name="idSala",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64",
+     *         )
+     *     ),
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
      * Endpoint de busca de salas
      * @param Request $request
      * @param int $idSala
@@ -188,6 +226,21 @@ class Room
     }
 
     /**
+     * @OA\Delete(
+     *     path="/api/salas/delete/{idSala}",tags={"salas"},
+     *     @OA\Parameter(
+     *         description="Id do registro da sala a ser deletada",
+     *         in="path",
+     *         name="idSala",
+     *         required=true,
+     *         @OA\Schema(
+     *             type="integer",
+     *             format="int64",
+     *         )
+     *     ),
+     *     @OA\Response(response="200", description="Success"),
+     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * )
      * Endpoint de exclusão de dados
      * @param int $id
      */

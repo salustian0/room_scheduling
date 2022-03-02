@@ -28,7 +28,8 @@
             <ul>
                 <li><a href="<?php $this->siteUrl('/home') ?>"><i class="fas fa-home"></i>Home</a></li>
                 <li><a href="<?php $this->siteUrl('/salas') ?>"><i class="fas fa-home"></i>Gerenciamento de salas</a></li>
-                <li><a href="<?php $this->siteUrl('/agendamento') ?>"><i class="fas fa-home"></i>Gerenciamento de agendamentos</a></li
+                <li><a href="<?php $this->siteUrl('/agendamento') ?>"><i class="fas fa-home"></i>Gerenciamento de agendamentos</a></li>
+                <li><a href="<?php $this->siteUrl('/docs') ?>"><i class="fas fa-home"></i>Api doc</a></li>
             </ul>
         </aside>
 

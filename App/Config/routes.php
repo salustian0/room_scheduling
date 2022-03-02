@@ -44,7 +44,7 @@ $router->addPostRoute('api/salas/registrar', function(Request $request){
 });
 
 /* ROTAS AGENDAMENTO */
-$router->addPostRoute('api/salas/agendar', function (Request $request){
+$router->addPostRoute('api/agendamento/registrar', function (Request $request){
     return Api\RoomScheduling::create($request);
 });
 
@@ -58,4 +58,12 @@ $router->addDeleteRoute('api/salas/delete/{idRoom}', function (int $idRoom){
 
 $router->addDeleteRoute('api/agendamentos/delete/{idAgendamento}', function (int $idAgendamento){
     return Api\RoomScheduling::delete($idAgendamento);
+});
+
+$router->addGetRoute('swagger/json', function (){
+    return Ctrl\Home::SwaggerJson();
+});
+
+$router->addGetRoute('docs', function (){
+    return Ctrl\Home::docs();
 });
