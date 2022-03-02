@@ -1,0 +1,201 @@
+<?php
+namespace App\Controllers\Api;
+
+use App\Entity\RoomEntity;
+use App\Models\RoomModel;
+use App\Models\RoomSchedulingModel;
+use App\system\http\Request;
+use App\system\http\Response;
+use App\system\Utils\Utils;
+
+/**
+ * Classe responsável pelas salas
+ */
+class Room{
+
+    /**
+     * Endpoint de criação de sala
+     * @param Request $request
+     * @throws \Exception
+     */
+    static function create(Request $request){
+        $response = new Response();
+
+        $roomEntity = new RoomEntity();
+        $roomEntity->setName($request->getPostParams('name'));
+        $roomEntity->setDescription($request->getPostParams('description'));
+        $roomEntity->setCreatedAt(date('Y-m-d H:i:s'));
+
+        /**
+         * Validação create
+         */
+        $errors = self::validateCreate($roomEntity);
+        if(!empty($errors)){
+            $response->setCode(422);
+            $response->setContentType('application/json');
+            $response->setMessage('Houve um erro durante a tentativa de registro de sala');
+            $response->setErrors($errors);
+            $response->sendResponse();
+        }
+
+        /**
+         * Criando sala
+         */
+        $roomModel = new RoomModel();
+        $insertedId = $roomModel->create($roomEntity);
+
+        if($insertedId){
+            $data = $roomModel->getById($insertedId);
+            if(!empty($data)){
+                $data = Utils::convertEntityToArray($data);
+            }
+
+            /**
+             * Resposta
+             */
+            $response = new Response();
+            $response->setContentType('application/json');
+            $response->setContent($data);
+            $response->setMessage("Sala '{$data['name']}' registrada com sucesso");
+            $response->setCode(200);
+            return $response->sendResponse();
+        }
+
+        $response = new Response();
+        $response->setContentType('application/json');
+        $response->setMessage("Houve um erro desconhecido durante a tentativa de cadastro da sala, por favor tente novamente mais tarde");
+        $response->setCode(500);
+        $response->sendResponse();
+    }
+
+
+    /**
+     * Validação de criação
+     * @param RoomEntity $roomEntity
+     * @return array
+     */
+    private static function validateCreate(RoomEntity $roomEntity) : array{
+        $errors = array();
+
+        if(empty($roomEntity->getName())){
+            array_push($errors, "O campo 'nome' é obrigatório!");
+        }else
+        {
+            if(mb_strlen($roomEntity->getName()) < 3 || mb_strlen($roomEntity->getName()) > 150){
+                array_push($errors, "O campo 'nome' deve conter entre 3 e 150 carácteres");
+            }
+        }
+
+        if(!empty($roomEntity->getDescription()) && mb_strlen($roomEntity->getDescription()) > 255){
+            array_push($errors, "O campo 'descrição' deve conter no máximo 255 carácteres");
+        }
+
+
+        return $errors;
+    }
+
+    /**
+     * Endpoint de busca de salas
+     * @param Request $request
+     * @throws \Exception
+     */
+    static function show(Request $request, int $idSala = 0){
+        $response = new Response();
+
+        $model = new RoomModel();
+
+        $filters = $request->getGetParams('filters');
+        if(!empty($filters)){
+            if(!is_array($filters)){
+                $response->setCode(500);
+                $response->setContentType('application/json');
+                $response->setMessage('Houve um erro durante a busca de dados');
+                $response->setErrors(array('para a busca filtrada é necessário informar os filtros em formato array'));
+                return $response->sendResponse();
+            }
+
+            $errors = self::validateFilters($filters);
+            if(!empty($errors)){
+                $response->setCode(500);
+                $response->setContentType('application/json');
+                $response->setMessage('Houve um erro durante a busca de dados');
+                $response->setErrors($errors);
+                return $response->sendResponse();
+            }
+        }
+
+        if(empty($idSala)){
+            $data = $model->getAll($filters);
+        }else{
+            $data = $model->getById($idSala);
+        }
+
+        if(!empty($data)){
+            $data = Utils::convertEntityToArray($data);
+        }
+
+        $response->setContentType('application/json');
+        $response->setContent($data);
+        $response->setCode(200);
+        $response->sendResponse();
+    }
+
+    /**
+     * @param array $filters
+     * @return array
+     */
+    private static function validateFilters(array $filters) : array{
+        $errors = array();
+
+        if(isset($filters['avaible_rooms'])){
+            if(!isset($filters['avaible_rooms']['date'])){
+                array_push($errors, 'para a busca filtrada é necessário informar a data');
+            }elseif(!Utils::validateDateFormat($filters['avaible_rooms']['date'],'Y-m-d')){
+                array_push($errors, 'O campo "data" informado é inválido');
+            }
+
+            if(empty($filters['avaible_rooms']['start_time'])){
+                array_push($errors, 'para a busca filtrada é necessário informar o horario inicial');
+            }elseif(!Utils::validateDateFormat($filters['avaible_rooms']['start_time'],'H:i')){
+                array_push($errors, 'O campo "horario inicial" informado é inválido');
+            }
+
+            if(empty($filters['avaible_rooms']['end_time'])){
+                array_push($errors, 'para a busca filtrada é necessário informar o horario final');
+            }elseif(!Utils::validateDateFormat($filters['avaible_rooms']['end_time'],'H:i')){
+                array_push($errors, 'O campo "horario final" informado é inválido');
+            }
+        }
+
+        return $errors;
+    }
+
+    static function delete(int $id){
+        $response = new Response();
+        $response->setContentType('application/json');
+
+        $model = new RoomModel();
+
+        if(!$model->existsById($id)){
+            $response->setCode(500);
+            $response->setMessage('Registro inexistente');
+            return $response->sendResponse();
+        }else if((new RoomSchedulingModel())->hasPendingSchedulingByIdRoom($id)){
+            $response->setCode(500);
+            $response->setMessage('Houve um erro durante a tentativa de exclusão do registro');
+            $response->setErrors(array('Existem agendamentos pendentes para esta sala!'));
+            return $response->sendResponse();
+        }
+
+        if($model->remove($id)){
+            $response->setMessage('Registro excluído com sucesso');
+            return $response->sendResponse();
+        }
+
+        $response->setCode(500);
+        $response->setMessage('Houve um erro durante a tentativa de exclusão do registro');
+        $response->setErrors(array('Erro desconhecido'));
+        return $response->sendResponse();
+    }
+
+}

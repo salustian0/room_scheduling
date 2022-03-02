@@ -72,3 +72,47 @@ function dialog(id, message, args) {
     }
     $('body').prepend(component_dialog);
 }
+
+$(document).on('submit','.form-ajax',  (e) => {
+    e.preventDefault();
+    let $this = $(e.currentTarget)
+    let request_url = $this.attr('action')
+    let method = $this.attr('method')
+    let data = $this.serializeArray();
+
+    $.ajax({
+        url: request_url,
+        method: method,
+        data: data
+    }).then((result) => {
+        let message = result.message ?? "";
+        if(message != ""){
+            $('.messages').empty().append(`<div class="message success">${message}</div>`)
+        }
+        eval(listMethod)();
+    }).catch( (err) => {
+        let response = err.responseJSON  ?? {};
+        let errors = response.errors ?? {}
+        for(let key in errors){
+            let error = errors[key]
+            $('.messages').empty().append(`<div class="message error">${error}</div>`)
+        }
+    })
+})
+
+/**
+ *
+ * @param _date
+ * @returns {string}
+ */
+function formatDate(_date, hour = true){
+    let date = new Date(_date);
+    let day = date.getDate().toString().padStart(2,'0');
+    let month = (date.getMonth()+1).toString().padStart(2,'0');
+    let year = date.getFullYear();
+    let completeHour = ''
+    if(hour){
+       completeHour = ' '+ date.getHours().toString().padStart(2,'0') + ':' + date.getMinutes().toString().padStart(2,'0') +':'+ date.getSeconds().toString().padStart(2,'0');
+    }
+    return `${day}/${month}/${year} ${completeHour}`
+}
