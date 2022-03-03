@@ -17,6 +17,8 @@ class Request{
     private string $action;
     private array $params;
     private string $requestedMethod;
+    private array $jsonParams;
+
 
     public function __construct()
     {
@@ -26,6 +28,8 @@ class Request{
         $this->postParams = $_POST ?? [];
         $this->requestedMethod = $_SERVER['REQUEST_METHOD'] ?? null;
         $this->headers = getallheaders();
+        $this->jsonParams = json_decode(file_get_contents("php://input"), true) ?? [];
+
     }
 
     /**
@@ -74,5 +78,18 @@ class Request{
 
     public function getRequestedMethod(){
         return $this->requestedMethod;
+    }
+
+    /**
+     * @param string|null $paramName
+     * @return array|mixed|null
+     */
+    public function getJsonParams(string $paramName = null){
+        if(!empty($paramName)){
+            if(isset($this->jsonParams[$paramName]) && !empty($this->jsonParams[$paramName]))
+                return $this->jsonParams[$paramName];
+            return null;
+        }
+        return $this->jsonParams[$paramName] ?? $this->jsonParams;
     }
 }
