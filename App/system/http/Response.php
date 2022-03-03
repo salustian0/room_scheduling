@@ -115,7 +115,7 @@ class Response{
     /**
      * Envia a resposta
      */
-    public function sendResponse(){
+    public function sendResponse(array $otherContent = array()){
         $this->sendHeaders();
         switch ($this->contentType){
             case 'text/html':
@@ -124,11 +124,17 @@ class Response{
             case 'application/json':
 
                 $this->content = (array)$this->content;
+
                 $arrResponse = array(
                     'code' => $this->getCode(),
                     'message' => $this->message,
                     'data' => $this->content
                 );
+
+                if(!empty($otherContent)){
+                    $arrResponse = array_merge($arrResponse, $otherContent);
+                }
+
 
                 if(!empty($this->errors)){
                     $arrResponse['errors'] = $this->errors;
