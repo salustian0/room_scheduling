@@ -30,8 +30,23 @@ class Room
     /**
      * @OA\Post(
      *     path="/api/salas/registrar",tags={"salas"},
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     *     @OA\Response(
+     *         response="200",
+     *         description="Success (Retorna os dados do registro realizado)",
+     *         @OA\JsonContent(ref="#/components/schemas/RoomEntity",
+     *         example={"code":200, "message": "Sala 'Nova sala' registrada com sucesso", "data":{"id": 1,"name": "Nova Sala","description": "Descrição da sala ...","created_at": "2022-03-03 00:18:03","updated_at": null}})
+     *      ),
+     *     @OA\Response(
+     *         response="422",
+     *         description="Error: Unprocessable Entity (Exemplo de resposta caso a propriedade 'name' não seja enviada)",
+     *         @OA\JsonContent(ref="#/components/schemas/RoomEntity",
+     *         example={"code":422, "message": "Houve um erro durante a tentativa de registro de sala", "data":{},"errors": {"O campo 'nome' é obrigatório!"}})
+     *      ),
+     *     @OA\RequestBody(
+     *         description="O dado 'description' não é obrigtório, porém o dado 'nome' é!",
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/RoomEntity",example={"name":"Nova Sala", "description": "Descrição da sala ..."})
+     *     )
      * )
      * @param Request $request
      * @throws \Exception
@@ -42,8 +57,8 @@ class Room
         $response->setContentType('application/json');
 
         $roomEntity = new RoomEntity();
-        $roomEntity->setName($request->getPostParams('name'));
-        $roomEntity->setDescription($request->getPostParams('description'));
+        $roomEntity->setName($request->getJsonParams('name'));
+        $roomEntity->setDescription($request->getJsonParams('description'));
         $roomEntity->setCreatedAt(date('Y-m-d H:i:s'));
 
         /**
@@ -73,6 +88,7 @@ class Room
             /**
              * Resposta
              */
+
             $response->setContentType('application/json');
             $response->setContent($data);
             $response->setMessage("Sala '{$data['name']}' registrada com sucesso");
@@ -116,13 +132,63 @@ class Room
     /**
      * @OA\Get(
      *     path="/api/salas/show",tags={"salas"},
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     *     @OA\Response(
+     *          response="200",
+     *          description="Success",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity",example={"code": 200,"message": "Busca realizada com sucesso","data": {"1":{"id": "1","name": "Sala de jogos","description": "Sala voltada para jogos online","created_at": "2022-03-02 06:45:21","updated_at": null},"2":{"id": "2","name": "Sala de informática","description": "Sala para aulas de informática","created_at": "2022-03-02 06:45:44","updated_at": null}},"count_registers": 2}),
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Not Found (Resposta que pode ocorrer caso não existam dados no banco)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity",example={"code": 404,"message": "Não foram encontrados registros para essa requisição","data": {},"count_registers": 0})
+     *     ),
+     *     @OA\Response(
+     *          response="422",
+     *          description="Error: Unprocessable Entity (Resposta que pode ocorrer caso os filtros por período não sejam informados corretamente)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity", example={  "code": 422,"message": "Houve um erro durante a busca de dados","data": {},"errors": {"O campo 'data' informado é inválido","para a busca filtrada é necessário informar o horario inicial","para a busca filtrada é necessário informar o horario final"}}),
+     *     ),
+     *     @OA\Parameter(
+     *         name="filters[name]",
+     *         in="query",
+     *         description="A busca filtrada por nome é opcional",
+     *         required=false,
+     *         @OA\Schema(
+     *             default="nome da sala",
+     *             type="string",
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="filters[avaible_rooms][date]",
+     *         in="query",
+     *         description="Formato requerido: '2022-03-03' | A busca filtrada por período é opcional porém para a realização dessa filtragem é necessário informar os seguintes campos: start_time, end_time e date, caso contrário se algum dos campos mencionados for informado a validação do filtro falhará e nenhum dado será retornado!",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string",
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="filters[avaible_rooms][start_time]",
+     *         in="query",
+     *         description="Formato requerido: '00:00' | A busca filtrada por período é opcional porém para a realização dessa filtragem é necessário informar os seguintes campos: start_time, end_time e date, caso contrário se algum dos campos mencionados for informado a validação do filtro falhará e nenhum dado será retornado!",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string",
+     *         )
+     *     ),
+     *     @OA\Parameter(
+     *         name="filters[avaible_rooms][end_time]",
+     *         in="query",
+     *         description="Formato requerido: '00:00' | A busca filtrada por período é opcional porém para a realização dessa filtragem é necessário informar os seguintes campos: start_time, end_time e date, caso contrário se algum dos campos mencionados for informado a validação do filtro falhará e nenhum dado será retornado!",
+     *         required=false,
+     *         @OA\Schema(
+     *             type="string",
+     *         )
+     *     )
      * )
      * @OA\Get(
      *     path="/api/salas/show/{idSala}",tags={"salas"},
      *     @OA\Parameter(
-     *         description="ID of pet to fetch",
+     *         description="Id do registro da sala a ser buscada",
      *         in="path",
      *         name="idSala",
      *         required=true,
@@ -131,8 +197,17 @@ class Room
      *             format="int64",
      *         )
      *     ),
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     *     @OA\Response(
+     *          response="200",
+     *          description="Success",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity", example={"code": 200,"message": "Sucesso na busca","data": {"id": 22,"name": "Sala de reunião","description": "Sala para reuniões","created_at": "2022-03-02 06:45:44","updated_at": null}}),
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Not Found (Resposta que pode ocorrer caso um id inexistente no banco seja enviado)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity", example={"code": 404,"message": "Não foram encontrados registros para essa requisição","data": {},"count_registers": 0}),
+     *     ),
+     *
      * )
      * Endpoint de busca de salas
      * @param Request $request
@@ -151,7 +226,7 @@ class Room
         $filters = $request->getGetParams('filters');
         if (!empty($filters)) {
             if (!is_array($filters)) {
-                $response->setCode(500);
+                $response->setCode(422);
                 $response->setContentType('application/json');
                 $response->setMessage('Houve um erro durante a busca de dados');
                 $response->setErrors(array('para a busca filtrada é necessário informar os filtros em formato array'));
@@ -171,8 +246,10 @@ class Room
         /**
          * Busca
          */
+        $otherContent = array('count_registers' => 0);
         if (empty($idSala)) {
             $data = $model->getAll($filters);
+            $otherContent['count_registers'] = count($data);
         } else {
             $data = $model->getById($idSala);
         }
@@ -189,8 +266,11 @@ class Room
          */
         $response->setContentType('application/json');
         $response->setContent($data);
-        $response->setCode(200);
-        $response->sendResponse();
+        $code = empty($data) ? 404 : 200;
+        $message = empty($data) ? 'Não foram encontrados registros para essa requisição' : 'Busca realizada com sucesso';
+        $response->setCode($code);
+        $response->setMessage($message);
+        return $response->sendResponse($otherContent);
     }
 
     /**
@@ -206,19 +286,19 @@ class Room
             if (!isset($filters['avaible_rooms']['date'])) {
                 array_push($errors, 'para a busca filtrada é necessário informar a data');
             } elseif (!Utils::validateDateFormat($filters['avaible_rooms']['date'], 'Y-m-d')) {
-                array_push($errors, 'O campo "data" informado é inválido');
+                array_push($errors, "O campo 'data' informado é inválido");
             }
 
             if (empty($filters['avaible_rooms']['start_time'])) {
                 array_push($errors, 'para a busca filtrada é necessário informar o horario inicial');
             } elseif (!Utils::validateDateFormat($filters['avaible_rooms']['start_time'], 'H:i')) {
-                array_push($errors, 'O campo "horario inicial" informado é inválido');
+                array_push($errors, "O campo 'horario inicial' informado é inválido");
             }
 
             if (empty($filters['avaible_rooms']['end_time'])) {
                 array_push($errors, 'para a busca filtrada é necessário informar o horario final');
             } elseif (!Utils::validateDateFormat($filters['avaible_rooms']['end_time'], 'H:i')) {
-                array_push($errors, 'O campo "horario final" informado é inválido');
+                array_push($errors, "O campo 'horario final' informado é inválido");
             }
         }
 
@@ -238,8 +318,21 @@ class Room
      *             format="int64",
      *         )
      *     ),
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     *     @OA\Response(
+     *          response="200",
+     *          description="Success",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity",example={"code": 200,"message": "Registro excluído com sucesso","data": {}})
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Error: Not Found (Resposta exibida quando o registro a ser deletado não existe)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity",example={"code": 404,"message": "Registro inexistente","data": {}})
+     *     ),
+     *     @OA\Response(
+     *          response="422",
+     *          description="Error: Unprocessable Entity (Resposta exibida quando o registro a ser deletado possui foreign keys associados a ele na tabela de agendamentos)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomEntity",example={  "code": 422,"message": "Houve um erro durante a tentativa de exclusão do registro","data": {},"errors": {"Existem agendamentos pendentes para esta sala!"}})
+     *     ),
      * )
      * Endpoint de exclusão de dados
      * @param int $id
@@ -252,11 +345,11 @@ class Room
         $model = new RoomModel();
 
         if (!$model->existsById($id)) {
-            $response->setCode(500);
+            $response->setCode(404);
             $response->setMessage('Registro inexistente');
             return $response->sendResponse();
         } else if ((new RoomSchedulingModel())->hasPendingSchedulingByIdRoom($id)) {
-            $response->setCode(500);
+            $response->setCode(422);
             $response->setMessage('Houve um erro durante a tentativa de exclusão do registro');
             $response->setErrors(array('Existem agendamentos pendentes para esta sala!'));
             return $response->sendResponse();

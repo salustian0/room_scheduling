@@ -1,12 +1,36 @@
 <?php
 namespace App\Entity;
 
+/**
+ * @OA\Schema()
+ */
 class RoomEntity implements EntityInterface {
+    /**
+     * @OA\Property (type="integer", description="Id da sala", nullable="false")
+     * @var int $id
+     */
     private $id;
+    /**
+     * @OA\Property (type="string", description="Nome da sala", nullable="false")
+     * @var string $name
+     */
     private $name;
+    /**
+     * @OA\Property (type="string", description="Descrição da sala", nullable="true")
+     * @var string $description
+     */
     private $description;
+    /**
+     * @OA\Property (type="string", description="Descrição da sala", nullable="false")
+     * @var string $description
+     */
     private $created_at;
+    /**
+     * @OA\Property (type="string", description="Data da ultima atualização", nullable="true")
+     * @var string $description
+     */
     private $updated_at;
+
 
     /**
      * @return mixed
