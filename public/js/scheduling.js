@@ -34,7 +34,7 @@ function listScheduling(){
                         <td>${formatDate(tr_data.date,false)}</td>
                         <td>${tr_data.start_time}</td>
                         <td>${tr_data.end_time}</td>
-                        <td>
+                        <td class="flex-td">
                             <button data-id="${tr_data.id}" class="delete sys-btn danger"><i class="fas fa-trash"></i>Excluir</button>
                         </td>          
                     `
@@ -71,7 +71,7 @@ $(document).on('click', '.delete',(e) => {
                 icon: 'fas fa-circle-check',
                 callback: () => {
                     $.ajax({
-                        url: `${SITE_URL}/api/agendamentos/delete/${id}`,
+                        url: `${SITE_URL}/api/agendamento/delete/${id}`,
                         method: 'DELETE'
                     }).then( (result) => {
                         let message = result.message ?? "";

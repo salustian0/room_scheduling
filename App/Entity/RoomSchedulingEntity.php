@@ -1,13 +1,43 @@
 <?php
 namespace App\Entity;
-
+/**
+ * @OA\Schema()
+ */
 class RoomSchedulingEntity implements EntityInterface{
+    /**
+     * @OA\Property (type="integer", description="Id do agendamento", nullable="false")
+     * @var $id
+     */
     private $id;
+    /**
+     * @OA\Property (type="integer", description="Id da sala", nullable="false")
+     * @var $id_room
+     */
     private $id_room;
+    /**
+     * @OA\Property (type="string", description="data do agendamento", nullable="false")
+     * @var $date
+     */
     private $date;
+    /**
+     * @OA\Property (type="string", description="Horário inicial do agendamento", nullable="false")
+     * @var $start_time
+     */
     private $start_time;
+    /**
+     * @OA\Property (type="string", description="Horário final do agendamento", nullable="false")
+     * @var $end_time
+     */
     private $end_time;
+    /**
+     * @OA\Property (type="string", description="Data de criação do registro", nullable="false")
+     * @var $created_at
+     */
     private $created_at;
+    /**
+     * @OA\Property (type="string", description="Data da última atualização do registro", nullable="false")
+     * @var $updated_at
+     */
     private $updated_at;
 
     /**

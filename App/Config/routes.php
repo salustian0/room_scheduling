@@ -56,7 +56,7 @@ $router->addDeleteRoute('api/salas/delete/{idRoom}', function (int $idRoom){
     return Api\Room::delete($idRoom);
 });
 
-$router->addDeleteRoute('api/agendamentos/delete/{idAgendamento}', function (int $idAgendamento){
+$router->addDeleteRoute('api/agendamento/delete/{idAgendamento}', function (int $idAgendamento){
     return Api\RoomScheduling::delete($idAgendamento);
 });
 

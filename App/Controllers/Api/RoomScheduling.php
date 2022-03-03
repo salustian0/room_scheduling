@@ -11,17 +11,35 @@ use App\system\Utils\Utils;
 
 /**
  * @OA\Tag(
- *     name="agendamentos",
- *     description="Gerenciamento das salas"
+ *     name="agendamento",
+ *     description="Gerenciamento dos agendamentos"
  * )
  */
 class RoomScheduling{
 
+
     /**
-     *  * @OA\Post(
-     *     path="/api/agendamento/registrar",tags={"agendamentos"},
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     * @OA\Post(
+     *     path="/api/agendamento/registrar",tags={"agendamento"},
+     *     @OA\Response(
+     *         response="200",
+     *         description="Success (Retorna os dados do registro realizado)",
+     *         @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",
+     *         example={"code": 200,"message": "Agendamento realizado com sucesso","data": {"id": 15,"id_room": 21,"date": "2022-10-10","start_time": "00:00:00","end_time": "00:30:00","created_at": "2022-03-03 04:04:26","updated_at": null}})
+     *      ),
+     *     @OA\Response(
+     *         response="422",
+     *         description="Error: Unprocessable Entity (1- Exemplo de resposta caso os dados obrigatórios não sejam enviados, 2- Exemplo de resposta caso a sala solicitada já esteja agendada dentro do horário solicitado)",
+     *         @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",
+     *         example={{  "code": 422,"message": "Houve um erro durante a tentativa de agendamento","data": {},"errors": {"O campo 'data' é obrigatório","O campo 'hora inicial' é obrigatório","O campo 'hora final' é obrigatório","O campo 'id_room' é obrigatório"}},
+     *         {"code": 422,"message": "Houve um erro durante a tentativa de agendamento","data": {},"errors": {"Já existe um agendamento para esta sala e data dentro do horário solicitado"}}})
+     *      ),
+     *     @OA\RequestBody(
+     *         description="Todos os dados no exemplo são obrigatórios",
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",
+     *          example={"date":"2022-10-10", "start_time": "00:00", "end_time": "00:30", "id_room": 21}),
+     *     )
      * )
      * Endpoint de agendamento de sala
      * @param Request $request
@@ -31,17 +49,17 @@ class RoomScheduling{
         $response = new Response();
 
         $schedulingEntity = new RoomSchedulingEntity();
-        $schedulingEntity->setDate($request->getPostParams('date'));
-        $schedulingEntity->setStartTime($request->getPostParams('start_time'));
-        $schedulingEntity->setEndTime($request->getPostParams('end_time'));
-        $schedulingEntity->setIdRoom($request->getPostParams('id_room'));
+        $schedulingEntity->setDate($request->getJsonParams('date'));
+        $schedulingEntity->setStartTime($request->getJsonParams('start_time'));
+        $schedulingEntity->setEndTime($request->getJsonParams('end_time'));
+        $schedulingEntity->setIdRoom($request->getJsonParams('id_room'));
 
         /**
          * Valida agendamento
          */
         $errors = self::validateCreate($schedulingEntity);
         if(!empty($errors)){
-            $response->setCode(500);
+            $response->setCode(422);
             $response->setContentType('application/json');
             $response->setMessage('Houve um erro durante a tentativa de agendamento');
             $response->setErrors($errors);
@@ -76,9 +94,17 @@ class RoomScheduling{
 
     /**
      * @OA\Get(
-     *     path="/api/agendamento/show",tags={"agendamentos"},
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     *     path="/api/agendamento/show",tags={"agendamento"},
+     *     @OA\Response(
+     *          response="200",
+     *          description="Success",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",example={"code": 200,"message": "Busca realizada com sucesso","data": {"11": {"id": "11","id_room": "21","date": "2022-03-02","start_time": "10:00:00","end_time": "22:00:00","created_at": "2022-03-02 06:46:56","updated_at": null,"room_name": "Sala de jogos"},"12": {"id": "12","id_room": "21","date": "2022-03-14","start_time": "11:59:00","end_time": "11:59:00","created_at": "2022-03-02 11:54:26","updated_at": null,"room_name": "Sala de jogos"}},"count_registers": 2}),
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Not Found (Resposta que pode ocorrer caso não existam dados no banco)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",example={"code": 404,"message": "Não foram encontrados registros para essa requisição","data": {},"count_registers": 0})
+     *     )
      * )
      * Endpoint de busca de dados (Não possui filtros)
      * @param Request $request
@@ -100,17 +126,24 @@ class RoomScheduling{
         }
 
 
-        $arrRoomEntity = (new RoomModel())->getAll();
-        foreach ($data as $id => $value){
-            if(array_key_exists($value['id_room'],$arrRoomEntity)){
-                $data[$id]['room_name'] = $arrRoomEntity[$value['id_room']]->getName();
+        if(!empty($data)){
+            $arrRoomEntity = (new RoomModel())->getAll();
+            foreach ($data as $id => $value){
+                if(array_key_exists($value['id_room'],$arrRoomEntity)){
+                    $data[$id]['room_name'] = $arrRoomEntity[$value['id_room']]->getName();
+                }
             }
         }
 
         $response->setContentType('application/json');
         $response->setContent($data);
-        $response->setCode(200);
-        $response->sendResponse();
+
+        $code = empty($data) ? 404 : 200;
+        $message = empty($data) ? 'Não foram encontrados registros para essa requisição' : 'Busca realizada com sucesso';
+        $response->setCode($code);
+        $response->setMessage($message);
+
+        $response->sendResponse(array('count_registers' => count($data)));
     }
 
     /**
@@ -173,16 +206,18 @@ class RoomScheduling{
              */
             if($period_end < $period_start){
                 array_push($errors, "A hora final não pode ser menor que a hora inicial");
-            }else if($startDate < strtotime(date('Y-m-d H:i:s'))){
+            } else if($startDate < strtotime(date('Y-m-d H:i:s'))){
                 /**
                  * Valida se a data e hora do agendamento são maiores que o horário atual
                  */
                 array_push($errors, "A data e horário do agendamento não podem ser menores que o momento atual");
+            }else if(($period_end - $period_start ) < 1800){
+                array_push($errors, "O agendamento minimo é de 30 minitos");
             }else if((new RoomSchedulingModel())->hasScheduling($schedulingEntity)){
                 /**
                  * Valida se já existe um agendamento dentro do horário solicitado
                  */
-                array_push($errors, "Já existe um agendamento para esta sala para esta data dentro do horário solicitado");
+                array_push($errors, "Já existe um agendamento para esta sala e data dentro do horário solicitado");
             }
         }
 
@@ -191,7 +226,7 @@ class RoomScheduling{
 
     /**
      * @OA\Delete(
-     *     path="/api/agendamento/delete/{idAgendamento}",tags={"agendamentos"},
+     *     path="/api/agendamento/delete/{idAgendamento}",tags={"agendamento"},
      *     @OA\Parameter(
      *         description="Id do registro do agendamento a ser deletado",
      *         in="path",
@@ -202,8 +237,16 @@ class RoomScheduling{
      *             format="int64",
      *         )
      *     ),
-     *     @OA\Response(response="200", description="Success"),
-     *     @OA\Response(response="422", description="Dados informados incorretamente")
+     *     @OA\Response(
+     *          response="200",
+     *          description="Success",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",example={"code": 200,"message": "Registro excluído com sucesso","data": {}})
+     *     ),
+     *     @OA\Response(
+     *          response="404",
+     *          description="Error: Not Found (Resposta exibida quando o registro a ser deletado não existe)",
+     *          @OA\JsonContent(ref="#/components/schemas/RoomSchedulingEntity",example={"code": 404,"message": "Registro inexistente","data": {}})
+     *     )
      * )
      * Endpoint de exclusão de agendamento
      * @param int $id
