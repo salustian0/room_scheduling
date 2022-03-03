@@ -150,10 +150,10 @@ class Room
      *     @OA\Parameter(
      *         name="filters[name]",
      *         in="query",
-     *         description="A busca filtrada por nome é opcional",
+     *         description="A busca filtrada por nome da sala é opcional",
      *         required=false,
      *         @OA\Schema(
-     *             default="nome da sala",
+     *             default="",
      *             type="string",
      *         )
      *     ),
@@ -235,7 +235,7 @@ class Room
 
             $errors = self::validateFilters($filters);
             if (!empty($errors)) {
-                $response->setCode(500);
+                $response->setCode(422);
                 $response->setContentType('application/json');
                 $response->setMessage('Houve um erro durante a busca de dados');
                 $response->setErrors($errors);
