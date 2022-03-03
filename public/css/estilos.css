@@ -275,6 +275,7 @@ textarea.sys-input{
     width: 100%;
     background-color: #fff;
     overflow: fragments;
+    font-weight: 600;
 }
 .sys-table > thead{
     color: var(--primary-color);
