@@ -24,7 +24,6 @@ function listRoom(data = {}){
         data: data
     }).then( (response) => {
         let component_tbody = component.find('tbody');
-
         if(response.hasOwnProperty('data') && !$.isEmptyObject(response.data)){
             for(let key in response.data){
                 let tr_data = response.data[key];
@@ -49,6 +48,9 @@ function listRoom(data = {}){
         $content.empty().append(component);
     }).catch( (err) =>{
         let response = err.responseJSON  ?? {};
+        if(response.code == 404){
+            $content.empty();
+        }
         let errors = response.errors ?? {}
         for(let key in errors){
             let error = errors[key]

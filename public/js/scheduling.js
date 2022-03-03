@@ -50,6 +50,9 @@ function listScheduling(){
         $content.empty().append(component);
     }).catch( (err) =>{
         let response = err.responseJSON  ?? {};
+        if(response.code == 404){
+            $content.empty();
+        }
         let errors = response.errors ?? {}
         for(let key in errors){
             let error = errors[key]

@@ -78,12 +78,19 @@ $(document).on('submit','.form-ajax',  (e) => {
     let $this = $(e.currentTarget)
     let request_url = $this.attr('action')
     let method = $this.attr('method')
-    let data = $this.serializeArray();
+    let serializer = $this.serializeArray();
+    let data = {};
+     for (let key in serializer){
+         let val = serializer[key];
+         data[val.name] = val.value;
+     }
 
     $.ajax({
         url: request_url,
         method: method,
-        data: data
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        processData: false,
     }).then((result) => {
         let message = result.message ?? "";
         if(message != ""){
