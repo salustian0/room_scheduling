@@ -21,12 +21,12 @@ class RoomEntity implements EntityInterface {
      */
     private $description;
     /**
-     * @OA\Property (type="string", description="Descrição da sala", nullable="false")
+     * @OA\Property (type="string", description="Data de criação da sala", nullable="false")
      * @var string $description
      */
     private $created_at;
     /**
-     * @OA\Property (type="string", description="Data da ultima atualização", nullable="true")
+     * @OA\Property (type="string", description="Data da última atualização da sala", nullable="true")
      * @var string $description
      */
     private $updated_at;
